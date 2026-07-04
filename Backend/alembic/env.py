@@ -14,9 +14,14 @@ import os
 
 load_dotenv()
 
+database_url = os.getenv("DATABASE_URL")
+
+# Escape % only for Alembic's configparser
+database_url = database_url.replace("%", "%%")  # pyright: ignore[reportOptionalMemberAccess]
+
 config.set_main_option(
     "sqlalchemy.url",
-    os.getenv("DATABASE_URL")  # pyright: ignore[reportArgumentType]
+    database_url
 )
 
 # Interpret the config file for Python logging.
