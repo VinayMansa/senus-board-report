@@ -1,5 +1,7 @@
 from sqlalchemy.orm import Session
 
+from app.ingestion.pipeline import ReportPipeline
+from app.repositories.report_repository import ReportRepository
 from app.models.financial_metric import FinancialMetric
 from app.repositories.financial_metric_repository import (
     FinancialMetricRepository,  # pyright: ignore[reportAttributeAccessIssue]
@@ -50,3 +52,28 @@ class FinancialMetricService:
             db,
             report_id,
         )
+    @staticmethod
+    def process_report(
+        db: Session,
+        report_id: int,
+    ):
+        report = ReportRepository.get_by_id(
+            db,
+            report_id,
+        )
+        if report is None:
+            raise ValueError("Report not found")
+        metrics = ReportPipeline.process(report.local_path
+        )
+        for metric in metrics:
+
+            FinancialMetricService.create_metric(
+            db=db,
+            report_id=report_id,
+            metric_name=metric["metric_name"],
+            metric_value=metric["metric_value"],
+            unit=metric["unit"],
+            page_number=metric["page_number"],
+        )
+
+        return metrics

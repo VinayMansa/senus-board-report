@@ -2,6 +2,7 @@ import json
 import os
 
 from app.models.report import Report
+from app.ingestion.downloader import download_report
 from app.repositories.report_repository import ReportRepository
 
 CONFIG_PATH = "app/config/report_sources.json"
@@ -19,13 +20,17 @@ class ReportService:
 
         for item in reports:
 
+            filename, save_path = download_report(item["url"])
+
             report = Report(
                 title=item["title"],
                 company_name=item["company_name"],
                 report_type=item["report_type"],
                 financial_year=item["financial_year"],
                 source_url=item["url"],
-                status="Pending"
+                file_name=filename,
+                local_path=save_path,
+                status="Downloaded"
             )
 
             report = ReportRepository.create(

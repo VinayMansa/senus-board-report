@@ -28,3 +28,12 @@ class ReportRepository:
     def delete(db: Session, report: Report):
         db.delete(report)
         db.commit()
+    @staticmethod
+    @staticmethod
+    def update(
+        db: Session,
+        report: Report,
+    ):
+        db.commit()
+        db.refresh(report)
+        return report

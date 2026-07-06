@@ -8,7 +8,24 @@ DOWNLOAD_FOLDER = "uploads/reports"
 os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
 
 
-def download_reports():
+def download_report(url: str):
+
+    filename = url.split("/")[-1]
+
+    save_path = os.path.join(
+        DOWNLOAD_FOLDER,
+        filename,
+    )
+
+    response = requests.get(url)
+
+    if response.status_code != 200:
+        raise Exception("Failed to download report")
+
+    with open(save_path, "wb") as pdf:
+        pdf.write(response.content)
+
+    return filename, save_path
 
     with open(CONFIG_PATH, "r") as file:
         reports = json.load(file)

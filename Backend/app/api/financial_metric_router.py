@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.core.dependencies import get_current_user
@@ -46,3 +46,29 @@ def delete_metrics(
     return {
         "message": "Metrics deleted successfully"
     }
+@router.post("/process/{report_id}")
+def process_report(
+    report_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+
+    try:
+
+        metrics = FinancialMetricService.process_report(
+            db,
+            report_id,
+        )
+
+        return {
+            "message": "Report processed successfully",
+            "metrics_extracted": len(metrics),
+            "metrics": metrics,
+        }
+
+    except ValueError as e:
+
+        raise HTTPException(
+            status_code=404,
+            detail=str(e),
+        )
