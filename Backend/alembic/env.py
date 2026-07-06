@@ -1,6 +1,8 @@
 from logging.config import fileConfig
 from app.database.base import Base
-
+from app.models.users import User
+from app.models.report import Report
+from app.models.financial_metric import FinancialMetric
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
