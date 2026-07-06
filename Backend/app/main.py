@@ -3,10 +3,11 @@ from sqlalchemy import text
 
 from app.database.db import engine  # pyright: ignore[reportMissingImports]
 from app.api.user_router import router as user_router
+from app.api.report_router import router as report_router
 
 app = FastAPI(title="Senus Board Report API")
 app.include_router(user_router)
-
+app.include_router(report_router)
 @app.get("/")
 def root():
     return {"message": "API is running"}
