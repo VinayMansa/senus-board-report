@@ -54,26 +54,31 @@ class FinancialMetricService:
         )
     @staticmethod
     def process_report(
-        db: Session,
-        report_id: int,
-    ):
+    db: Session,
+    report_id: int,
+):
+
         report = ReportRepository.get_by_id(
             db,
             report_id,
         )
+
         if report is None:
             raise ValueError("Report not found")
-        metrics = ReportPipeline.process(report.local_path
+
+        metrics = ReportPipeline.process(
+            report.local_path,
         )
+
         for metric in metrics:
 
             FinancialMetricService.create_metric(
-            db=db,
-            report_id=report_id,
-            metric_name=metric["metric_name"],
-            metric_value=metric["metric_value"],
-            unit=metric["unit"],
-            page_number=metric["page_number"],
-        )
+                db=db,
+                report_id=report_id,
+                metric_name=metric["metric_name"],
+                metric_value=metric["metric_value"],
+                unit=metric["unit"],
+                page_number=metric["page_number"],
+            )
 
         return metrics

@@ -6,6 +6,7 @@ from app.database.db import get_db
 from app.models.users import User
 from app.schemas.report import ReportResponse
 from app.services.report_service import ReportService
+from app.ingestion.page_locator import PageLocator
 
 router = APIRouter(
     prefix="/reports",
@@ -85,3 +86,24 @@ def delete_report(
             status_code=404,
             detail=str(e),
         )
+        
+@router.get("/{report_id}/financial-pages")
+def locate_financial_pages(
+    report_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+
+    report = ReportService.get_by_id(
+        db,
+        report_id,
+    )
+
+    pages = PageLocator.locate_financial_pages(
+        report.local_path,
+    )
+
+    return {
+        "report": report.title,
+        "financial_pages": pages,
+    }

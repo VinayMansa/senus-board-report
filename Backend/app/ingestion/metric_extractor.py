@@ -1,92 +1,64 @@
 import re
-import pandas as pd
+from typing import cast
+
+import fitz
 
 
 class MetricExtractor:
 
-    # Keywords we want to detect
-    METRICS = [
-        "Revenue",
-        "Gross Profit",
-        "Operating Profit",
-        "EBITDA",
-        "EBIT",
-        "Net Profit",
-        "Profit Before Tax",
-        "Cash",
-        "Cash and Cash Equivalents",
-        "Net Debt",
-        "Assets",
-        "Liabilities",
-        "Equity",
-        "Customers",
-        "ARR",
-    ]
+    PATTERNS = {
+        "Turnover": r"Turnover\s*([\(\)\d,]+)",
+        "Gross Profit": r"Gross Profit\s*([\(\)\d,]+)",
+        "Operating Profit": r"Operating Profit\s*/?\s*\(Loss\)\s*([\(\)\d,]+)",
+        "Profit Before Tax": r"Profit\s*/?\s*\(Loss\)\s*Before Tax\s*([\(\)\d,]+)",
+        "Profit After Tax": r"Profit\s*/?\s*\(Loss\)\s*After Tax\s*([\(\)\d,]+)",
+        "Net Assets": r"Net\s*\(Liabilities\)\s*/\s*Assets\s*([\(\)\d,]+)",
+        "Retained Earnings": r"Retained Earnings\s*([\(\)\d,]+)",
+    }
 
     @staticmethod
-    def _extract_number(value):
+    def clean_number(value):
 
         if value is None:
             return None
 
-        value = str(value)
-
-        # Remove commas and euro symbol
         value = value.replace(",", "")
-        value = value.replace("€", "")
-        value = value.strip()
 
-        match = re.search(r"-?\d+(\.\d+)?", value)
+        if "(" in value:
+            value = "-" + value.replace("(", "").replace(")", "")
 
-        if match:
-            return float(match.group())
-
-        return None
+        return float(value)
 
     @classmethod
-    def extract_metrics(cls, tables):
+    def extract_metrics(cls, pdf_path, pages):
+
+        document = fitz.open(pdf_path)
 
         metrics = []
 
-        for table_data in tables:
+        for page_number in pages:
 
-            page = table_data["page"]
+            page = document.load_page(page_number - 1)
 
-            df = table_data["table"]
+            text = cast(str, page.get_text("text"))
 
-            for _, row in df.iterrows():
+            for metric, pattern in cls.PATTERNS.items():
 
-                row_values = [
-                    str(cell).strip()
-                    for cell in row
-                    if cell is not None
-                ]
+                match = re.search(pattern, text, re.MULTILINE)
 
-                if len(row_values) < 2:
-                    continue
+                if match:
 
-                metric_name = row_values[0]
+                    metrics.append(
+                        {
+                            "metric_name": metric,
+                            "metric_value": cls.clean_number(
+                                match.group(1)
+                            ),
+                            "unit": "EUR",
+                            "page_number": page_number,
+                        }
+                    )
 
-                if metric_name in cls.METRICS:
-
-                    value = None
-
-                    for cell in row_values[1:]:
-
-                        value = cls._extract_number(cell)
-
-                        if value is not None:
-                            break
-
-                    if value is not None:
-
-                        metrics.append(
-                            {
-                                "metric_name": metric_name,
-                                "metric_value": value,
-                                "unit": "EUR",
-                                "page_number": page,
-                            }
-                        )
+        document.close()
 
         return metrics
