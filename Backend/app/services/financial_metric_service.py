@@ -82,3 +82,13 @@ class FinancialMetricService:
             )
 
         return metrics
+    @staticmethod
+    def get_report_metrics(
+    db: Session,
+    report_id,
+):
+
+     return FinancialMetricRepository.get_by_report(
+        db,
+        report_id,
+    )

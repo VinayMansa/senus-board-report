@@ -30,6 +30,17 @@ def get_metrics(
         db,
         report_id,
     )
+@router.get("/report/{report_id}")
+def get_report_metrics(
+    report_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+
+    return FinancialMetricService.get_report_metrics(
+        db,
+        report_id,
+    )
 
 
 @router.delete("/{report_id}")
