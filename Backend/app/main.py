@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from sqlalchemy import text
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.database.db import engine  # pyright: ignore[reportMissingImports]
 from app.api.user_router import router as user_router
@@ -14,6 +15,26 @@ app.include_router(report_router)
 app.include_router(financial_metric_router)
 app.include_router(dashboard_router)
 app.include_router(ai_router)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 @app.get("/")
 def root():
     return {"message": "API is running"}
