@@ -17,3 +17,13 @@ export const getKPIs = async (id) => {
 
     return response.data;
 };
+
+export const getSummaryAI =
+async (id) => {
+
+    const response =
+    await api.get(`/ai/summary/${id}`);
+
+    return response.data;
+
+};

@@ -1,14 +1,15 @@
 import api from "../api/axios";
 
-export const getSummary = async () => {
+export const getSummary =
+async () => {
 
-    const response = await api.get(
-        "/dashboard/summary"
-    );
+    const response =
+    await api.get("/dashboard/summary");
 
     return response.data;
 
 };
+
 
 export const getReports = async () => {
 
